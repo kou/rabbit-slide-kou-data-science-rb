@@ -5,7 +5,7 @@
 : institution
    クリアコード
 : content-source
-   DataScience.rb ワークショップ
+   DataScience.rbワークショップ
 : date
    2017-05-19
 : allotted-time
@@ -13,6 +13,124 @@
 : theme
    clear-code
 
-= ...
+= はじめに
+
+(('tag:center'))
+(('tag:large'))
+私はRubyが好きだ
+
+(('tag:center'))
+(('tag:large'))
+だからデータ分析だって\n
+Rubyでやりたい
+
+(('tag:center'))
+(('note:Rubyよりも向いている言語があるのはわかっているけどさー'))
+
+= Apache Arrow
+
+  * データフォーマットの仕様
+  * ↑を扱う実装
+
+= Arrow：解決したい問題
+
+  * 高いデータ交換コスト
+  * 重複した最適化実装
+
+= Arrow：文脈
+
+ビッグデータの分析
+
+= ビッグデータの分析
+
+  * いろんなシステムが連携
+    * Java実装のもろもろとPythonとR
+  * システム間でデータ交換が必要
+    * 交換する度にシリアライズ・パース
+    * (('wait'))↑に結構CPUと時間を使われる…
+    * (('wait'))そんなのより分析処理に使いたい！
+
+= Arrow：解決方針
+
+コストゼロの\n
+シリアライズ・\n
+パース
+
+= Arrow：コストゼロの実現
+
+  * そのまま使えるフォーマット
+    * 例:int8の配列→int8の値を連続配置
+    * 1バイトずつずらせば高速アクセス可
+  * Arrowのトレードオフ
+    * サイズ圧縮よりシリアライズゼロ
+    * 参考：Parquetはサイズ圧縮優先
+
+= Arrowがある世界
+
+  * 各システムがサクサク連携
+    * 例：PySparkが高速化
+    * 理由:Py🡘Javaのデータ交換コスト減
+  * Java・Python・R以外も活躍
+    * 例：Ruby・Go・Rust・Juliaとか
+    * 理由：低コストでデータ交換可能
+
+= ArrowとRuby
+
+チャンス！
+
+= ArrowとRubyとデータ分析
+
+  * RubyがArrowに対応
+    * Rubyにデータが回ってくる！
+  * 次のステップ
+    * できることを増やしていく
+
+= ArrowとRubyの今
+
+  * RubyでArrowを使える！
+    * 私が使えるようにしているから！
+    * 公式リポジトリーにも入っている\n
+      (('note:厳密に言うと違うんだけど公式サポートだと思ってよい'))
+    * コミッターにもなった
+
+= 今できること
+
+(('tag:center'))
+pandasでデータ生成→書き込み
+
+  # coderay python
+  import pyarrow as pa
+
+  df = pd.DataFrame({"a": [1, 2, 3],
+                     "b": ["hello", "world", "!"]})
+  record_batch = pa.RecordBatch.from_pandas(df)
+
+  with pa.OSFile("/tmp/pandas.arrow", "wb") as sink:
+      schema = record_batch.schema
+      writer = pa.RecordBatchFileWriter(sink, schema)
+      writer.write_batch(record_batch)
+      writer.close()
+
+= 今できること
+
+(('tag:center'))
+Rubyで読み込み
+
+  # coderay ruby
+  require "arrow"
+
+  path = "/tmp/pandas.arrow"
+  Arrow::MemoryMappedInputStream.open(path) do |input|
+    reader = Arrow::FileReader.new(input)
+    reader.each do |record_batch|
+      puts("=" * 40)
+      puts(record_batch)
+    end
+  end
+
+= 今できること
+
+(('tag:center'))
+NArrayに変換
 
 ...

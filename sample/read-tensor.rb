@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require "arrow"
+require "arrow-numo-narray"
+require "arrow-nmatrix"
+require "arrow-gsl"
+
+require "pp"
+
+Arrow::MemoryMappedInputStream.open("/tmp/tensor.arrow") do |input|
+  tensor = input.read_tensor(0)
+  pp tensor.to_narray
+  pp tensor.to_nmatrix
+  pp tensor.to_gsl
+end

@@ -119,9 +119,10 @@ Rubyで読み込み
   # coderay ruby
   require "arrow"
 
-  path = "/tmp/pandas.arrow"
-  Arrow::MemoryMappedInputStream.open(path) do |input|
-    reader = Arrow::FileReader.new(input)
+  Input = Arrow::MemoryMappedInputStream
+  Reader = Arrow::RecordBatchFileReader
+  Input.open("/tmp/pandas.arrow") do |input|
+    reader = Reader.new(input)
     reader.each do |record_batch|
       puts("=" * 40)
       puts(record_batch)
@@ -131,6 +132,95 @@ Rubyで読み込み
 = 今できること
 
 (('tag:center'))
-NArrayに変換
+NumPyでデータ生成→書き込み
 
-...
+  # coderay python
+  import pyarrow as pa
+  import numpy as np
+
+  ndarray = np.random.randn(10, 6)
+  print(ndarray)
+  tensor = pa.Tensor.from_numpy(ndarray)
+  with pa.OSFile("/tmp/tensor.arrow", "wb") as sink:
+      pa.write_tensor(tensor, sink)
+
+= 今できること
+
+(('tag:center'))
+Rubyで読み込み
+
+  # coderay ruby
+  require "arrow"
+
+  Input = Arrow::MemoryMappedInputStream
+  Input.open("/tmp/tensor.arrow") do |input|
+    tensor = input.read_tensor(0)
+    p tensor.shape # => [10, 6]
+  end
+
+= 今できること
+
+(('tag:center'))
+GSLオブジェクトに変換
+
+  # coderay ruby
+  require "arrow"
+  require "arrow-gsl"
+  require "pp"
+
+  Input = Arrow::MemoryMappedInputStream
+  Input.open("/tmp/tensor.arrow") do |input|
+    tensor = input.read_tensor(0)
+    pp tensor.to_gsl
+    # tensor.to_gsl.to_arrow == tensor
+  end
+
+= 今できること
+
+(('tag:center'))
+NMatrixオブジェクトに変換
+
+  # coderay ruby
+  require "arrow"
+  require "arrow-nmatrix"
+  require "pp"
+
+  Input = Arrow::MemoryMappedInputStream
+  Input.open("/tmp/tensor.arrow") do |input|
+    tensor = input.read_tensor(0)
+    pp tensor.to_nmatrix
+    # tensor.to_nmatrix.to_arrow == tensor
+  end
+
+= 今できること
+
+(('tag:center'))
+Numo::NArrayオブジェクトに変換
+
+  # coderay ruby
+  require "arrow"
+  require "arrow-numo-narray"
+  require "pp"
+
+  Input = Arrow::MemoryMappedInputStream
+  Input.open("/tmp/tensor.arrow") do |input|
+    tensor = input.read_tensor(0)
+    pp tensor.to_narray
+    # tensor.to_narray.to_arrow == tensor
+  end
+
+= ここまでのまとめ
+
+  * Arrowが実現したい世界
+    * データ交換コストが低い世界
+  * RubyとArrowの今
+    * ArrowはRubyを公式サポート！
+    * Rubyの外の世界とデータ交換可能
+    * Rubyの各種ライブラリーとの\n
+      相互変換が可能\n
+      (('note:（メモリーコピーぐらいのコストで）'))
+
+= ArrowとRubyとこれから
+
+  * Arrow
+    * ...

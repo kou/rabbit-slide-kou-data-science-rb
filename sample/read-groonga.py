@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import pandas as pd
 import pyarrow as pa
 
 with pa.OSFile("/tmp/filtered.arrow") as source:

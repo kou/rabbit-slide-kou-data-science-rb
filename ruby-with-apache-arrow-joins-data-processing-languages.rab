@@ -29,12 +29,14 @@ Rubyでやりたい
 
 = Apache Arrow
 
-  * データフォーマットの仕様
+(('tag:center'))
+データフォーマットの仕様
 
 (('tag:center'))
 と
 
-  * その仕様を処理する実装
+(('tag:center'))
+その仕様を処理する実装
 
 = Arrow：解決したい問題
 
@@ -102,17 +104,19 @@ Rubyでやりたい
     * 公式リポジトリーにも入っている\n
       (('note:厳密に言うと違うんだけど公式サポートだと思ってよい'))
   * Rubyでデータを読み書きできる
+    * いくらかデータ処理もできる
 
 = 今できること
 
   * Python・Rとのデータ交換
+  * データ処理をいくらか
   * Rubyの各種ライブラリー間での\n
     データ交換
 
 = Arrow：Python
 
   # coderay python
-  # pandasでデータ生成→Arrowで書き込み
+  # pandasでデータ生成→Arrow形式で書き込み
   import pyarrow as pa
 
   df = pd.DataFrame({"a": [1, 2, 3],
@@ -128,7 +132,7 @@ Rubyでやりたい
 = Arrow：Ruby
 
   # coderay ruby
-  # Rubyでpandasのデータを読み込み
+  # RubyでArrow形式のpandasのデータを読み込み
   require "arrow"
 
   Input = Arrow::MemoryMappedInputStream
@@ -143,7 +147,7 @@ Rubyでやりたい
 = Feather：R
 
   # coderay R
-  # Rでデータ生成→Featherで書き込み
+  # Rでデータ生成→Feather形式で書き込み
   library("feather")
 
   df = data.frame(a=c(1, 2, 3),
@@ -153,7 +157,7 @@ Rubyでやりたい
 = Feather：Ruby
 
   # coderay ruby
-  # RubyでRのデータを読み込み
+  # RubyでFeather形式のRのデータを読み込み
   require "arrow"
 
   Input = Arrow::MemoryMappedInputStream
@@ -167,7 +171,7 @@ Rubyでやりたい
 = Parquet：Python
 
   # coderay python
-  # Pythonでデータ生成→Parquetで書き込み
+  # Pythonでデータ生成→Parquet形式で書き込み
   import pandas as pd
   import pyarrow as pa
   import pyarrow.parquet as pq
@@ -199,6 +203,58 @@ Rubyでやりたい
     * Python・R専用
   * Parquet形式
     * 各種言語(('note:（Hadoop界隈ですでに広く使われている）'))
+
+= データ処理例
+
+  * Groongaでフィルター
+  * Groonga
+    * 全文検索エンジン
+    * カラムストアなので集計処理も得意
+    * Apache Arrow対応
+    * よくできたRubyバインディングあり
+
+= Groonga：Ruby
+
+  # coderay ruby
+  # 空のテーブルにArrow形式のデータを読み込む
+  logs = Groonga::Array.create(name: "logs")
+  logs.load_arrow("/tmp/pandas.arrow")
+  logs.each {|record| p record.attributes}
+  # フィルター
+  filtered_logs = logs.select do |record|
+    record.b =~ "hello" # "hello"で全文検索
+  end
+  # フィルター結果をArrow形式で書き込み
+  filtered_logs.dump_arrow("/tmp/filtered.arrow",
+                           column_names: ["a", "b"])
+
+= Groonga：Python
+
+  # coderay python
+  # Arrow形式のGroongaでのフィルター結果を読み込む
+  import pyarrow as pa
+
+  with pa.OSFile("/tmp/filtered.arrow") as source:
+      writer = pa.RecordBatchFileReader(source)
+      print(writer.get_record_batch(0).to_pandas())
+
+= Rubyでデータ処理（現状）
+
+  * 既存のCライブラリーを活用
+    * 速度がでるし機能もある
+  * CライブラリーをArrowに対応
+    * Arrow→Ruby→Cライブラリー\n
+      ↑から↓で高速化(('note:（オブジェクト生成は遅い）'))
+    * Arrow→Cライブラリー
+
+= Rubyでデータ処理（案）
+
+  * Fluentdとか速くなりそう
+    * 途中でメッセージを参照しないなら
+  * MessagePackからArrowに変える
+    * Arrowのまま出力先へ送る
+    * 途中でRubyオブジェクトができない\n
+      (('note:シリアライズ・パースがなくなって速い！'))
 
 = 多次元配列
 
@@ -299,15 +355,14 @@ Rubyでやりたい
 
   * Arrow
     * データフレーム処理の最適化実装
-    * マルチコア対応
-    * GPU対応
+    * マルチコア・GPU対応
   * Ruby
     * Red Data Toolsプロジェクト
 
 = Red Data Tools
 
   * Rubyでデータ処理したいなぁ！\n
-    実現を目指すプロジェクト
+    の実現を目指すプロジェクト
   * URL：
     * https://github.io/red-data-tools
     * https://red-data-tools.github.io
@@ -321,22 +376,57 @@ Rubyでやりたい
   * Red Parquet(('note:（ParquetのRubyバインディング）'))
   * Jekyll Jupyter Notebook plugin(('note:（JekyllでJupyter Notebookを表示）'))
 
-= ポリシー
+= ポリシー1
 
-  * Acting than blaming\n
-    (('note:時間は嘆き・非難より手を動かすことに使う'))
-  * Continuous small works than a temporary big work than\n
-    (('note:一時的な集中じゃなく小さくても継続して活動する'))
-  * Ignore blames from outsiders\n
-    (('note:部外者の非難は気にしない'))\n
-    (('note:結果がでるまでグチグチ言われるはず :p'))
-  * Fun! (Because we use Ruby!)
+(('tag:center'))
+Collaborate over\n
+Ruby community
 
-= Join Us!
+(('tag:center'))
+(('note:Ruby以外の人たちとも言語を超えて協力する'))\n
+(('note:Apache Arrowがやっていることはまさにそう'))\n
+(('note:もちろんRubyの人たちとも協力する'))
+
+= ポリシー2
+
+(('tag:center'))
+Acting than blaming
+
+(('tag:center'))
+(('note:時間は嘆き・非難より手を動かすことに使う'))
+
+= ポリシー3
+
+(('tag:center'))
+Continuous small works than\n
+a temporary big work
+
+(('tag:center'))
+(('note:一時的にガッとやって終わりより'))\n
+(('note:小さくても継続して活動する'))
+
+= ポリシー4
+
+(('tag:center'))
+Ignore blames from outsiders
+
+(('tag:center'))
+(('note:部外者の非難は気にしない'))\n
+(('note:結果がでるまでグチグチ言われるはず :p'))
+
+= ポリシー5
+
+(('tag:center'))
+Fun!\n
+Because we use Ruby!
+
+(('tag:center'))
+(('note:Rubyを使うんだし楽しくやろう！'))
+
+= Join us!
 
   * Rubyでデータ処理したい人！
-  * ポリシーに同意できる人！\n
-    (('note:（手を動かす人！継続する人！楽しんでやる人！）'))
+  * ポリシーに同意できる人！
   * URL：
     * https://github.io/red-data-tools
     * https://red-data-tools.github.io

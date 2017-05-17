@@ -11,9 +11,5 @@ end
 filtered_logs = logs.select do |record|
   record.b =~ "hello"
 end
-columns = [
-  filtered_logs.column("a"),
-  filtered_logs.column("b"),
-]
 filtered_logs.dump_arrow("/tmp/filtered.arrow",
-                         columns: columns)
+                         column_names: ["a", "b"])

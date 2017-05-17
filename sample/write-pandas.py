@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import pandas as pd
 import pyarrow as pa
 
 df = pd.DataFrame({"a": [1, 2, 3],

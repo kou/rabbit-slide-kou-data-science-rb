@@ -379,8 +379,8 @@ Rubyでやりたい
 = ポリシー1
 
 (('tag:center'))
-Collaborate over\n
-Ruby community
+Collaborate\n
+over Ruby communities
 
 (('tag:center'))
 (('note:Ruby以外の人たちとも言語を超えて協力する'))\n
@@ -408,13 +408,24 @@ a temporary big work
 = ポリシー4
 
 (('tag:center'))
+The current\n
+lack of knowledge\n
+isn't matter
+
+(('tag:center'))
+(('note:現時点で数学や統計学などの知識が足りなくても問題ない'))\n
+(('note:既存の実装を使ったりそこから学んだりできるから'))
+
+= ポリシー5
+
+(('tag:center'))
 Ignore blames from outsiders
 
 (('tag:center'))
 (('note:部外者の非難は気にしない'))\n
 (('note:結果がでるまでグチグチ言われるはず :p'))
 
-= ポリシー5
+= ポリシー6
 
 (('tag:center'))
 Fun!\n

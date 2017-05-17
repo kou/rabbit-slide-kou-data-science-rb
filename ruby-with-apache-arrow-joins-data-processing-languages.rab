@@ -30,12 +30,18 @@ Rubyでやりたい
 = Apache Arrow
 
   * データフォーマットの仕様
-  * ↑を扱う実装
+
+(('tag:center'))
+と
+
+  * その仕様を処理する実装
 
 = Arrow：解決したい問題
 
   * 高いデータ交換コスト
+    * →低くしたい
   * 重複した最適化実装
+    * →実装を共有したい
 
 = Arrow：文脈
 
@@ -82,23 +88,31 @@ Rubyでやりたい
 
   * RubyがArrowに対応
     * Rubyにデータが回ってくる！
-  * 次のステップ
-    * できることを増やしていく
+    * →Rubyにもデータ分析の機会が！\n
+      (('note:（今はできることは少ないだろうけど…）'))
+  * (('wait'))次のステップ
+    * できることを増やしていく！
+    * →Rubyでもいろいろデータ分析！
 
 = ArrowとRubyの今
 
   * RubyでArrowを使える！
-    * 私が使えるようにしているから！
+    * 私が使えるようにしているから！\n
+      (('note:コミッターにもなった'))
     * 公式リポジトリーにも入っている\n
       (('note:厳密に言うと違うんだけど公式サポートだと思ってよい'))
-    * コミッターにもなった
+  * Rubyでデータを読み書きできる
 
 = 今できること
 
-(('tag:center'))
-pandasでデータ生成→書き込み
+  * Python・Rとのデータ交換
+  * Rubyの各種ライブラリー間での\n
+    データ交換
+
+= Arrow：Python
 
   # coderay python
+  # pandasでデータ生成→Arrowで書き込み
   import pyarrow as pa
 
   df = pd.DataFrame({"a": [1, 2, 3],
@@ -111,45 +125,107 @@ pandasでデータ生成→書き込み
       writer.write_batch(record_batch)
       writer.close()
 
-= 今できること
-
-(('tag:center'))
-Rubyで読み込み
+= Arrow：Ruby
 
   # coderay ruby
+  # Rubyでpandasのデータを読み込み
   require "arrow"
 
   Input = Arrow::MemoryMappedInputStream
-  Reader = Arrow::RecordBatchFileReader
   Input.open("/tmp/pandas.arrow") do |input|
-    reader = Reader.new(input)
+    reader = Arrow::RecordBatchFileReader.new(input)
     reader.each do |record_batch|
       puts("=" * 40)
       puts(record_batch)
     end
   end
 
-= 今できること
+= Feather：R
 
-(('tag:center'))
-NumPyでデータ生成→書き込み
+  # coderay R
+  # Rでデータ生成→Featherで書き込み
+  library("feather")
+
+  df = data.frame(a=c(1, 2, 3),
+                  b=c(1.1, 2.2, 3.3))
+  write_feather(df, "/tmp/dataframe.feather")
+
+= Feather：Ruby
+
+  # coderay ruby
+  # RubyでRのデータを読み込み
+  require "arrow"
+
+  Input = Arrow::MemoryMappedInputStream
+  Input.open("/tmp/dataframe.feather") do |input|
+    reader = Arrow::FeatherFileReader.new(input)
+    reader.columns.each do |column|
+      puts("#{column.name}: #{column.to_a.inspect}")
+    end
+  end
+
+= Parquet：Python
 
   # coderay python
+  # Pythonでデータ生成→Parquetで書き込み
+  import pandas as pd
+  import pyarrow as pa
+  import pyarrow.parquet as pq
+
+  df = pd.DataFrame({"a": [1, 2, 3],
+                     "b": ["hello", "world", "!"]})
+  table = pa.Table.from_pandas(df)
+  pq.write_table(table, "/tmp/pandas.parquet")
+
+= Parquet：Ruby
+
+  # coderay ruby
+  # RubyでParquet形式のデータを読み込み
+  require "arrow"
+  require "parquet"
+
+  path = "/tmp/pandas.parquet"
+  reader = Parquet::ArrowFileReader.new(path)
+  table = reader.read_table
+  table.each_column do |column|
+    puts("#{column.name}: #{column.to_a.inspect}")
+  end
+
+= 対応データ形式まとめ
+
+  * Arrow形式
+    * 各種言語(('note:（これから広く使われているはず）'))
+  * Feather形式
+    * Python・R専用
+  * Parquet形式
+    * 各種言語(('note:（Hadoop界隈ですでに広く使われている）'))
+
+= 多次元配列
+
+  * Arrowではオプション機能
+    * テンソルと呼んでいる\n
+      (('note:（traditional multidimensional array objectと説明）'))
+  * C++実装ではサポート
+    * バインディングでは使える
+    * Python・Ruby…では使える
+
+= Tensor：Python
+
+  # coderay python
+  # NumPyでデータ生成→書き込み
   import pyarrow as pa
   import numpy as np
 
-  ndarray = np.random.randn(10, 6)
+  ndarray = np.random.randn(10, 6) # 10x6
   print(ndarray)
   tensor = pa.Tensor.from_numpy(ndarray)
   with pa.OSFile("/tmp/tensor.arrow", "wb") as sink:
       pa.write_tensor(tensor, sink)
 
-= 今できること
-
-(('tag:center'))
-Rubyで読み込み
+= Tensor：Ruby
 
   # coderay ruby
+  # Rubyで読み込み
   require "arrow"
 
   Input = Arrow::MemoryMappedInputStream
@@ -158,12 +234,10 @@ Rubyで読み込み
     p tensor.shape # => [10, 6]
   end
 
-= 今できること
-
-(('tag:center'))
-GSLオブジェクトに変換
+= Ruby：GSL
 
   # coderay ruby
+  # GSLオブジェクトに変換
   require "arrow"
   require "arrow-gsl"
   require "pp"
@@ -175,12 +249,10 @@ GSLオブジェクトに変換
     # tensor.to_gsl.to_arrow == tensor
   end
 
-= 今できること
-
-(('tag:center'))
-NMatrixオブジェクトに変換
+= Ruby：NMatrix
 
   # coderay ruby
+  # NMatrixオブジェクトに変換
   require "arrow"
   require "arrow-nmatrix"
   require "pp"
@@ -192,12 +264,10 @@ NMatrixオブジェクトに変換
     # tensor.to_nmatrix.to_arrow == tensor
   end
 
-= 今できること
-
-(('tag:center'))
-Numo::NArrayオブジェクトに変換
+= Ruby：Numo::NArray
 
   # coderay ruby
+  # Numo::NArrayオブジェクトに変換
   require "arrow"
   require "arrow-numo-narray"
   require "pp"
@@ -209,13 +279,18 @@ Numo::NArrayオブジェクトに変換
     # tensor.to_narray.to_arrow == tensor
   end
 
-= ここまでのまとめ
+= ここまでのまとめ1
 
   * Arrowが実現したい世界
     * データ交換コストが低い世界
+    * 最適化実装を共有している世界
+
+= ここまでのまとめ2
+
   * RubyとArrowの今
     * ArrowはRubyを公式サポート！
-    * Rubyの外の世界とデータ交換可能
+    * Rubyの外の世界とデータ交換可能\n
+      (('note:（Arrow・Feather・Parquetをサポート）'))
     * Rubyの各種ライブラリーとの\n
       相互変換が可能\n
       (('note:（メモリーコピーぐらいのコストで）'))
@@ -223,4 +298,46 @@ Numo::NArrayオブジェクトに変換
 = ArrowとRubyとこれから
 
   * Arrow
-    * ...
+    * データフレーム処理の最適化実装
+    * マルチコア対応
+    * GPU対応
+  * Ruby
+    * Red Data Toolsプロジェクト
+
+= Red Data Tools
+
+  * Rubyでデータ処理したいなぁ！\n
+    実現を目指すプロジェクト
+  * URL：
+    * https://github.io/red-data-tools
+    * https://red-data-tools.github.io
+    * https://gitter.im/red-data-tools
+
+= 既存プロダクト
+
+  * Red Arrow(('note:（ArrowのRubyバインディング）'))
+    * Red Arrow XXX(('note:（ArrowとXXXの相互変換）'))
+  * Parquet GLib(('note:（ParquetのGLibバインディング）'))
+  * Red Parquet(('note:（ParquetのRubyバインディング）'))
+  * Jekyll Jupyter Notebook plugin(('note:（JekyllでJupyter Notebookを表示）'))
+
+= ポリシー
+
+  * Acting than blaming\n
+    (('note:時間は嘆き・非難より手を動かすことに使う'))
+  * Continuous small works than a temporary big work than\n
+    (('note:一時的な集中じゃなく小さくても継続して活動する'))
+  * Ignore blames from outsiders\n
+    (('note:部外者の非難は気にしない'))\n
+    (('note:結果がでるまでグチグチ言われるはず :p'))
+  * Fun! (Because we use Ruby!)
+
+= Join Us!
+
+  * Rubyでデータ処理したい人！
+  * ポリシーに同意できる人！\n
+    (('note:（手を動かす人！継続する人！楽しんでやる人！）'))
+  * URL：
+    * https://github.io/red-data-tools
+    * https://red-data-tools.github.io
+    * https://gitter.im/red-data-tools

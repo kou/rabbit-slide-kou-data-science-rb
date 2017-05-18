@@ -115,7 +115,7 @@ Rubyでやりたい
 
 = Arrow：Python
 
-  # coderay python
+  # rouge python
   # pandasでデータ生成→Arrow形式で書き込み
   import pyarrow as pa
 
@@ -131,7 +131,7 @@ Rubyでやりたい
 
 = Arrow：Ruby
 
-  # coderay ruby
+  # rouge ruby
   # RubyでArrow形式のpandasのデータを読み込み
   require "arrow"
 
@@ -146,7 +146,7 @@ Rubyでやりたい
 
 = Feather：R
 
-  # coderay R
+  # rouge R
   # Rでデータ生成→Feather形式で書き込み
   library("feather")
 
@@ -156,7 +156,7 @@ Rubyでやりたい
 
 = Feather：Ruby
 
-  # coderay ruby
+  # rouge ruby
   # RubyでFeather形式のRのデータを読み込み
   require "arrow"
 
@@ -170,7 +170,7 @@ Rubyでやりたい
 
 = Parquet：Python
 
-  # coderay python
+  # rouge python
   # Pythonでデータ生成→Parquet形式で書き込み
   import pandas as pd
   import pyarrow as pa
@@ -183,7 +183,7 @@ Rubyでやりたい
 
 = Parquet：Ruby
 
-  # coderay ruby
+  # rouge ruby
   # RubyでParquet形式のデータを読み込み
   require "arrow"
   require "parquet"
@@ -215,7 +215,7 @@ Rubyでやりたい
 
 = Groonga：Ruby
 
-  # coderay ruby
+  # rouge ruby
   # 空のテーブルにArrow形式のデータを読み込む
   logs = Groonga::Array.create(name: "logs")
   logs.load_arrow("/tmp/pandas.arrow")
@@ -230,7 +230,7 @@ Rubyでやりたい
 
 = Groonga：Python
 
-  # coderay python
+  # rouge python
   # Arrow形式のGroongaでのフィルター結果を読み込む
   import pyarrow as pa
 
@@ -267,7 +267,7 @@ Rubyでやりたい
 
 = Tensor：Python
 
-  # coderay python
+  # rouge python
   # NumPyでデータ生成→書き込み
   import pyarrow as pa
   import numpy as np
@@ -280,7 +280,7 @@ Rubyでやりたい
 
 = Tensor：Ruby
 
-  # coderay ruby
+  # rouge ruby
   # Rubyで読み込み
   require "arrow"
 
@@ -292,7 +292,7 @@ Rubyでやりたい
 
 = Ruby：GSL
 
-  # coderay ruby
+  # rouge ruby
   # GSLオブジェクトに変換
   require "arrow"
   require "arrow-gsl"
@@ -307,7 +307,7 @@ Rubyでやりたい
 
 = Ruby：NMatrix
 
-  # coderay ruby
+  # rouge ruby
   # NMatrixオブジェクトに変換
   require "arrow"
   require "arrow-nmatrix"
@@ -322,7 +322,7 @@ Rubyでやりたい
 
 = Ruby：Numo::NArray
 
-  # coderay ruby
+  # rouge ruby
   # Numo::NArrayオブジェクトに変換
   require "arrow"
   require "arrow-numo-narray"

@@ -79,7 +79,7 @@ Rubyでやりたい
     * 例：PySparkが高速化
     * 理由:Py🡘Javaのデータ交換コスト減
   * Java・Python・R以外も活躍
-    * 例：Ruby・Go・Rust・Juliaとか
+    * 例：Ruby・Lua・Julia・Go・Rust…
     * 理由：低コストでデータ交換可能
 
 = ArrowとRuby
@@ -144,6 +144,25 @@ Rubyでやりたい
     end
   end
 
+= Arrow：Lua
+
+  # rouge lua
+  -- LuaでArrow形式のpandasのデータを読み込み
+  -- Torchへの変換コードはArrowの公式リポジトリーにアリ
+  local lgi = require "lgi"
+  local Arrow = lgi.Arrow
+
+  local input_class = Arrow.MemoryMappedInputStream
+  local input = input_class.new("/tmp/pandas.arrow")
+  local reader = Arrow.RecordBatchFileReader.new(input)
+  for i = 0, reader:get_n_record_batches() - 1 do
+     local record_batch = reader:get_record_batch(i)
+     print(string.rep("=", 40))
+     print("record-batch["..i.."]:")
+     io.write(record_batch:to_string())
+  end
+  input:close()
+
 = Feather：R
 
   # rouge R
@@ -198,7 +217,7 @@ Rubyでやりたい
 = 対応データ形式まとめ
 
   * Arrow形式
-    * 各種言語(('note:（これから広く使われているはず）'))
+    * 各種言語(('note:（これから広く使われるはず）'))
   * Feather形式
     * Python・R専用
   * Parquet形式
@@ -253,7 +272,7 @@ Rubyでやりたい
     * 途中でメッセージを参照しないなら
   * MessagePackからArrowに変える
     * Arrowのまま出力先へ送る
-    * 途中でRubyオブジェクトができない\n
+    * 途中でRubyオブジェクトを作らない\n
       (('note:シリアライズ・パースがなくなって速い！'))
 
 = 多次元配列
@@ -263,7 +282,7 @@ Rubyでやりたい
       (('note:（traditional multidimensional array objectと説明）'))
   * C++実装ではサポート
     * バインディングでは使える
-    * Python・Ruby…では使える
+    * Python・Ruby・Lua…では使える
 
 = Tensor：Python
 

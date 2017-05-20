@@ -117,13 +117,14 @@ Rubyでやりたい
 
   # rouge python
   # pandasでデータ生成→Arrow形式で書き込み
+  import pandas as pd
   import pyarrow as pa
 
   df = pd.DataFrame({"a": [1, 2, 3],
                      "b": ["hello", "world", "!"]})
   record_batch = pa.RecordBatch.from_pandas(df)
 
-  with pa.OSFile("/tmp/pandas.arrow", "wb") as sink:
+  with pa.OSFile("/dev/shm/pandas.arrow", "wb") as sink:
       schema = record_batch.schema
       writer = pa.RecordBatchFileWriter(sink, schema)
       writer.write_batch(record_batch)
@@ -136,7 +137,7 @@ Rubyでやりたい
   require "arrow"
 
   Input = Arrow::MemoryMappedInputStream
-  Input.open("/tmp/pandas.arrow") do |input|
+  Input.open("/dev/shm/pandas.arrow") do |input|
     reader = Arrow::RecordBatchFileReader.new(input)
     reader.each do |record_batch|
       puts("=" * 40)
@@ -153,7 +154,7 @@ Rubyでやりたい
   local Arrow = lgi.Arrow
 
   local input_class = Arrow.MemoryMappedInputStream
-  local input = input_class.new("/tmp/pandas.arrow")
+  local input = input_class.new("/dev/shm/pandas.arrow")
   local reader = Arrow.RecordBatchFileReader.new(input)
   for i = 0, reader:get_n_record_batches() - 1 do
      local record_batch = reader:get_record_batch(i)
@@ -171,7 +172,7 @@ Rubyでやりたい
 
   df = data.frame(a=c(1, 2, 3),
                   b=c(1.1, 2.2, 3.3))
-  write_feather(df, "/tmp/dataframe.feather")
+  write_feather(df, "/dev/shm/dataframe.feather")
 
 = Feather：Ruby
 
@@ -180,7 +181,7 @@ Rubyでやりたい
   require "arrow"
 
   Input = Arrow::MemoryMappedInputStream
-  Input.open("/tmp/dataframe.feather") do |input|
+  Input.open("/dev/shm/dataframe.feather") do |input|
     reader = Arrow::FeatherFileReader.new(input)
     reader.columns.each do |column|
       puts("#{column.name}: #{column.to_a.inspect}")
@@ -198,7 +199,7 @@ Rubyでやりたい
   df = pd.DataFrame({"a": [1, 2, 3],
                      "b": ["hello", "world", "!"]})
   table = pa.Table.from_pandas(df)
-  pq.write_table(table, "/tmp/pandas.parquet")
+  pq.write_table(table, "/dev/shm/pandas.parquet")
 
 = Parquet：Ruby
 
@@ -207,7 +208,7 @@ Rubyでやりたい
   require "arrow"
   require "parquet"
 
-  path = "/tmp/pandas.parquet"
+  path = "/dev/shm/pandas.parquet"
   reader = Parquet::ArrowFileReader.new(path)
   table = reader.read_table
   table.each_column do |column|
@@ -237,14 +238,14 @@ Rubyでやりたい
   # rouge ruby
   # 空のテーブルにArrow形式のデータを読み込む
   logs = Groonga::Array.create(name: "logs")
-  logs.load_arrow("/tmp/pandas.arrow")
+  logs.load_arrow("/dev/shm/pandas.arrow")
   logs.each {|record| p record.attributes}
   # フィルター
   filtered_logs = logs.select do |record|
     record.b =~ "hello" # "hello"で全文検索
   end
   # フィルター結果をArrow形式で書き込み
-  filtered_logs.dump_arrow("/tmp/filtered.arrow",
+  filtered_logs.dump_arrow("/dev/shm/filtered.arrow",
                            column_names: ["a", "b"])
 
 = Groonga：Python
@@ -253,7 +254,7 @@ Rubyでやりたい
   # Arrow形式のGroongaでのフィルター結果を読み込む
   import pyarrow as pa
 
-  with pa.OSFile("/tmp/filtered.arrow") as source:
+  with pa.OSFile("/dev/shm/filtered.arrow") as source:
       writer = pa.RecordBatchFileReader(source)
       print(writer.get_record_batch(0).to_pandas())
 
@@ -294,7 +295,7 @@ Rubyでやりたい
   ndarray = np.random.randn(10, 6) # 10x6
   print(ndarray)
   tensor = pa.Tensor.from_numpy(ndarray)
-  with pa.OSFile("/tmp/tensor.arrow", "wb") as sink:
+  with pa.OSFile("/dev/shm/tensor.arrow", "wb") as sink:
       pa.write_tensor(tensor, sink)
 
 = Tensor：Ruby
@@ -304,7 +305,7 @@ Rubyでやりたい
   require "arrow"
 
   Input = Arrow::MemoryMappedInputStream
-  Input.open("/tmp/tensor.arrow") do |input|
+  Input.open("/dev/shm/tensor.arrow") do |input|
     tensor = input.read_tensor(0)
     p tensor.shape # => [10, 6]
   end
@@ -318,7 +319,7 @@ Rubyでやりたい
   require "pp"
 
   Input = Arrow::MemoryMappedInputStream
-  Input.open("/tmp/tensor.arrow") do |input|
+  Input.open("/dev/shm/tensor.arrow") do |input|
     tensor = input.read_tensor(0)
     pp tensor.to_gsl
     # tensor.to_gsl.to_arrow == tensor
@@ -333,7 +334,7 @@ Rubyでやりたい
   require "pp"
 
   Input = Arrow::MemoryMappedInputStream
-  Input.open("/tmp/tensor.arrow") do |input|
+  Input.open("/dev/shm/tensor.arrow") do |input|
     tensor = input.read_tensor(0)
     pp tensor.to_nmatrix
     # tensor.to_nmatrix.to_arrow == tensor
@@ -348,7 +349,7 @@ Rubyでやりたい
   require "pp"
 
   Input = Arrow::MemoryMappedInputStream
-  Input.open("/tmp/tensor.arrow") do |input|
+  Input.open("/dev/shm/tensor.arrow") do |input|
     tensor = input.read_tensor(0)
     pp tensor.to_narray
     # tensor.to_narray.to_arrow == tensor
@@ -382,8 +383,8 @@ Rubyでやりたい
 
   * Rubyでデータ処理したいなぁ！\n
     の実現を目指すプロジェクト
-  * URL：
-    * https://github.io/red-data-tools
+  * リソース：
+    * GitHub: red-data-tools
     * https://red-data-tools.github.io
     * https://gitter.im/red-data-tools
 
@@ -457,7 +458,7 @@ Because we use Ruby!
 
   * Rubyでデータ処理したい人！
   * ポリシーに同意できる人！
-  * URL：
-    * https://github.io/red-data-tools
+  * リソース：
+    * GitHub: red-data-tools
     * https://red-data-tools.github.io
     * https://gitter.im/red-data-tools
